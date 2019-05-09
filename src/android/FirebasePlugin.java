@@ -55,6 +55,10 @@ import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
+import android.provider.Settings;
+import android.net.Uri;
+import android.os.Build;
+
 public class FirebasePlugin extends CordovaPlugin {
 
     private FirebaseAnalytics mFirebaseAnalytics;
@@ -103,6 +107,12 @@ public class FirebasePlugin extends CordovaPlugin {
             return true;
         } else if (action.equals("hasPermission")) {
             this.hasPermission(callbackContext);
+            return true;
+        } else if (action.equals("grantPermission")) {
+            this.grantPermission(callbackContext);
+            return true;
+        } else if (action.equals("showNotificationSettings")) {
+            this.showNotificationSettings(callbackContext);
             return true;
         } else if (action.equals("setBadgeNumber")) {
             this.setBadgeNumber(callbackContext, args.getInt(0));
@@ -379,6 +389,52 @@ public class FirebasePlugin extends CordovaPlugin {
             }
         });
     }
+
+    private void grantPermission(final CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                try {
+                    Context context = cordova.getActivity();
+                    NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
+                    boolean areNotificationsEnabled = notificationManagerCompat.areNotificationsEnabled();
+                    if (! areNotificationsEnabled) {
+                        showNotificationSettings(callbackContext);
+                    }
+                } catch (Exception e) {
+                    Crashlytics.logException(e);
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void showNotificationSettings(final CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                try {
+                    Context context = cordova.getContext();
+                    Intent intent = new Intent();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                        intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                        intent.putExtra("app_package", context.getPackageName());
+                        intent.putExtra("app_uid", context.getApplicationInfo().uid);
+                    } else {
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.addCategory(Intent.CATEGORY_DEFAULT);
+                        intent.setData(Uri.parse("package:" + context.getPackageName()));
+                    }
+                    context.startActivity(intent);
+                } catch (Exception e) {
+                    Crashlytics.logException(e);
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        });
+    }
+
 
     private void setBadgeNumber(final CallbackContext callbackContext, final int number) {
         cordova.getThreadPool().execute(new Runnable() {
@@ -882,7 +938,7 @@ public class FirebasePlugin extends CordovaPlugin {
                     }
 
                     if (myTrace != null && myTrace instanceof Trace) {
-                        myTrace.incrementCounter(counterNamed);
+                        myTrace.incrementMetric(counterNamed, 1);
                         callbackContext.success();
                     } else {
                         callbackContext.error("Trace not found");

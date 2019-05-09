@@ -32,6 +32,12 @@ exports.grantPermission = function (success, error) {
   }
 };
 
+exports.showNotificationSettings= function (success, error) {
+  if (typeof success === 'function') {
+    success();
+  }
+};
+
 exports.setBadgeNumber = function (number, success, error) {
   if (typeof success === 'function') {
     success();
