@@ -28,6 +28,11 @@ exports.grantPermission = function (success, error) {
   exec(success, error, "FirebasePlugin", "grantPermission", []);
 };
 
+exports.checkPermission = function (success, error) {
+  exec(success, error, "FirebasePlugin", "checkPermission", []);
+};
+
+
 exports.hasPermission = function (success, error) {
   exec(success, error, "FirebasePlugin", "hasPermission", []);
 };

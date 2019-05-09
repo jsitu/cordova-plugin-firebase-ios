@@ -137,6 +137,45 @@ static FirebasePlugin *firebasePlugin;
     return;
 }
 
+- (void)checkPermission:(CDVInvokedUrlCommand *)command {
+#if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+    UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * settings) {
+        // Enable or disable features based on authorization.
+        UNAuthorizationStatus status = settings.authorizationStatus;
+        NSString *response = @"unknown";
+        if (status == UNAuthorizationStatusNotDetermined) {
+            response = @"not_determined";
+        } else if (status == UNAuthorizationStatusAuthorized) {
+            response = @"authorized";
+        } else if (status == UNAuthorizationStatusDenied) {
+            response = @"denied";
+        }
+        if (![NSThread isMainThread]) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:1];
+                [message setObject:response forKey:@"status"];
+                CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:message];
+                [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+            });
+        } else {
+            NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:1];
+            [message setObject:response forKey:@"status"];
+            CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:message];
+            [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+        }
+
+    }];
+#else
+    NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:1];
+    [message setObject:@"unknown" forKey:@"status"];
+    CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:message];
+    [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+
+#endif
+
+}
+
 - (void)verifyPhoneNumber:(CDVInvokedUrlCommand *)command {
     [self getVerificationID:command];
 }
