@@ -290,10 +290,11 @@ static FirebasePlugin *firebasePlugin;
         NSString* name = [command.arguments objectAtIndex:0];
         CDVCommandStatus status;
         if ([[command argumentAtIndex:1] isKindOfClass:[NSDictionary class]]) {
+//            NSLog(@"=========== LOG EVENT: %@ :: %@", name, [command argumentAtIndex:1]);
             [FIRAnalytics logEventWithName:name parameters:[command argumentAtIndex:1]];
             status = CDVCommandStatus_OK;
         } else {
-            NSLog(@"ERROR: FirebasePlugin.logEvent: %@", [command argumentAtIndex:1]);
+            NSLog(@"ERROR: FirebasePlugin.logEvent: %@ :: %@", name, [command argumentAtIndex:1]);
             status = CDVCommandStatus_ERROR;
         }
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:status];
