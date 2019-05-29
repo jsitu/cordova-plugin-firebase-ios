@@ -4,12 +4,6 @@ exports.getVerificationID = function (number, success, error) {
   }
 };
 
-exports.getInstanceId = function (success, error) {
-  if (typeof success === 'function') {
-    success();
-  }
-};
-
 exports.getToken = function (success, error) {
   if (typeof success === 'function') {
     success();
@@ -110,13 +104,13 @@ exports.fetch = function (cacheExpirationSeconds, success, error) {
   }
 };
 
-exports.getByteArray = function (key, namespace, success, error) {
+exports.getByteArray = function (key, success, error) {
   if (typeof success === 'function') {
     success();
   }
 };
 
-exports.getValue = function (key, namespace, success, error) {
+exports.getValue = function (key, success, error) {
   if (typeof success === 'function') {
     success();
   }
@@ -134,7 +128,7 @@ exports.setConfigSettings = function (settings, success, error) {
   }
 };
 
-exports.setDefaults = function (defaults, namespace, success, error) {
+exports.setDefaults = function (defaults, success, error) {
   if (typeof success === 'function') {
     success();
   }
